@@ -33,7 +33,15 @@ Load Balancer:
 To create stack:
 
 `bash create_stack.sh TestStack infra.yml parameters.json`
+
+
+To delete stack:
 `sudo bash delete_stack.sh TestStack`
 
-**Notes:**
-We use tags to know what project do our resources correspond to.
+**Diagram**
+![Architecture diagram](./architecture-chart.jpeg)
+
+**Outputs:**
+![output 1](./output1.png)
+![output 2](./output2.png)
+
