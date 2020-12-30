@@ -1,14 +1,15 @@
 Description: >
     Jakub Gajdul / Udacity 2020
-    This template deploys infrastructure for our web app test.
+    This template deploys infrastructure for our high availability web application.
     Network:
       * VPC
+      * Internet Gateway & Attachement
       * Public & private subnets 
       * Two availability zones
-      * Internet Gateway
       * NAT gateways
       * Routing tables
     Servers:
+      * IAM Role, poliecies and profile
       * Load Balancer Security Group
       * Web Server Security Group (EC2) 
       * Web app launch configuration
@@ -47,6 +48,8 @@ Parameters:
     Default: 10.0.3.0/24
     
 Resources:
+
+# Network
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -237,7 +240,7 @@ Resources:
                   -   arn:aws:s3:::ias-udagram-project/*
           Roles:
           -   Ref: UdacityS3ReadOnlyEC2
-
+  
   ProfileWithRolesForOurApp:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -250,7 +253,7 @@ Resources:
   LBSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow http to our load balancer
+      GroupDescription: Allow http to our load balancer.
       VpcId: !Ref VPC
       SecurityGroupIngress:
       - IpProtocol: tcp
@@ -262,6 +265,7 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: 0.0.0.0/0
+
   WebServerSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -281,6 +285,7 @@ Resources:
         FromPort: 0
         ToPort: 65535
         CidrIp: 0.0.0.0/0
+
   WebAppLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -294,7 +299,7 @@ Resources:
           cd /var/www/html
           aws s3 cp s3://ias-udagram-project/udacity.zip .
           unzip -o udacity.zip
-      ImageId: ami-0e80a462ede03e653
+      ImageId: ami-03441ec6f2faa7ddc
       IamInstanceProfile: !Ref ProfileWithRolesForOurApp
       # Optional param for ssh
       #KeyName: that-one
@@ -318,6 +323,7 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 5
       VpcId: !Ref VPC
+
   WebAppGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -330,6 +336,7 @@ Resources:
       MaxSize: '5'
       TargetGroupARNs:
       - Ref: WebAppTargetGroup
+
   WebAppLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -338,6 +345,7 @@ Resources:
       - !Ref PublicSubnet2
       SecurityGroups:
       - Ref: LBSecGroup
+
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -349,6 +357,7 @@ Resources:
         Ref: WebAppLB
       Port: 80
       Protocol: HTTP
+
   ALBListenerRule:
       Type: AWS::ElasticLoadBalancingV2::ListenerRule
       Properties:
@@ -360,8 +369,6 @@ Resources:
           Values: [/]
         ListenerArn: !Ref 'Listener'
         Priority: 1
-
-
 
 Outputs: 
 
